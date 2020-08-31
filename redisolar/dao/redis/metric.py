@@ -120,6 +120,15 @@ class MetricDaoRedis(MetricDaoBase, RedisDaoBase):
         minute_of_day = self._get_day_minute(time) # pylint: disable=unused-variable
 
         # START Challenge #2
+
+        # Reminder on structure of sorted set element
+        # element is value:minute_of_the_day
+        element = str(value) + ":" + str(minute_of_day)
+        self.redis.zadd(metric_key, {element: minute_of_day})
+        
+        # Ensure sorted set expires within METRIC_EXPIRATION_SECONDS
+        self.redis.expire(metric_key, METRIC_EXPIRATION_SECONDS)
+
         # END Challenge #2
 
     def get_recent(self, site_id: int, unit: MetricUnit, time: datetime.datetime,
