@@ -62,25 +62,18 @@ class SiteStatsDaoRedis(SiteStatsDaoBase, RedisDaoBase):
 
         # START Challenge #3
 
-        # Use Lua script
-        script = CompareAndUpdateScript(self.redis)
-
         reporting_time = datetime.datetime.utcnow().isoformat()
+
         pipeline.hset(key, SiteStats.LAST_REPORTING_TIME, reporting_time)
         pipeline.hincrby(key, SiteStats.COUNT, 1)
         pipeline.expire(key, WEEK_SECONDS)
 
-        max_wh = self.redis.hget(key, SiteStats.MAX_WH)
-        if not max_wh or meter_reading.wh_generated > float(max_wh):
-        	script.update_if_greater(pipeline, key, SiteStats.MAX_WH, meter_reading.wh_generated)
+        # Use Lua script
+        self.compare_and_update_script.update_if_greater(pipeline, key, SiteStats.MAX_WH, meter_reading.wh_generated)
 
-        min_wh = self.redis.hget(key, SiteStats.MIN_WH)
-        if not min_wh or meter_reading.wh_generated < float(min_wh):
-        	script.update_if_less(pipeline, key, SiteStats.MIN_WH, meter_reading.wh_generated)
+        self.compare_and_update_script.update_if_less(pipeline, key, SiteStats.MIN_WH, meter_reading.wh_generated)
 
-        max_capacity = self.redis.hget(key, SiteStats.MAX_CAPACITY)
-        if not max_capacity or meter_reading.current_capacity > float(max_capacity):
-        	script.update_if_greater(pipeline, key, SiteStats.MAX_CAPACITY, meter_reading.wh_generated)
+        self.compare_and_update_script.update_if_greater(pipeline, key, SiteStats.MAX_CAPACITY, meter_reading.current_capacity)
         
         # END Challenge #3
 
