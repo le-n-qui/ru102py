@@ -123,8 +123,9 @@ class MetricDaoRedis(MetricDaoBase, RedisDaoBase):
 
         # Reminder on structure of sorted set element
         # element is value:minute_of_the_day
-        element = str(value) + ":" + str(minute_of_day)
-        self.redis.zadd(metric_key, {element: minute_of_day})
+        # element = str(value) + ":" + str(minute_of_day) 
+        # Instead of using variable element, use class MeasurementMinute
+        self.redis.zadd(metric_key, {str(MeasurementMinute(value, minute_of_day)): minute_of_day})
         
         # Ensure sorted set expires within METRIC_EXPIRATION_SECONDS
         self.redis.expire(metric_key, METRIC_EXPIRATION_SECONDS)
