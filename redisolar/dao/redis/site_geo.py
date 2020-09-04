@@ -90,10 +90,17 @@ class SiteGeoDaoRedis(SiteGeoDaoBase, RedisDaoBase):
         """Find all Sites."""
         site_ids = self.redis.zrange(self.key_schema.site_geo_key(), 0, -1)
         sites = set()
+        pipeline = self.redis.pipeline() # create a pipeline 
 
         for site_id in site_ids:
             key = self.key_schema.site_hash_key(site_id)
-            site_hash = self.redis.hgetall(key)
-            sites.add(FlatSiteSchema().load(site_hash))
+            #site_hash = self.redis.hgetall(key)
+            #sites.add(FlatSiteSchema().load(site_hash))
+            pipeline.hgetall(key) # Queue hgetall commands in pipeline
+
+        site_hashes = pipeline.execute() # Send commands to server
+
+        for s_hash in site_hashes:
+        	sites.add(FlatSiteSchema().load(s_hash))
 
         return sites
