@@ -70,8 +70,16 @@ class SiteGeoDaoRedis(SiteGeoDaoBase, RedisDaoBase):
 
         # Delete the next lines after you've populated a `site_ids`
         # and `scores` variable.
-        site_ids: List[str] = []
-        scores: Dict[str, float] = {}
+        site_ids: List[str] = self.redis.georadius(self.key_schema.site_geo_key(), \
+        	query.coordinate.lng, query.coordinate.lat, query.radius, query.radius_unit.value)
+       
+        capacity_scores_list = self.redis.zrange(self.key_schema.capacity_ranking_key(), \
+        	0 , -1, withscores=True)
+        
+        scores: Dict[str, float] = {
+        	site_id: capacity
+        	for site_id, capacity in capacity_scores_list
+        }
 
         for site_id in site_ids:
             if scores[site_id] and scores[site_id] > CAPACITY_THRESHOLD:
