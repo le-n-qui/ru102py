@@ -70,12 +70,21 @@ class SiteGeoDaoRedis(SiteGeoDaoBase, RedisDaoBase):
 
         # Delete the next lines after you've populated a `site_ids`
         # and `scores` variable.
-        site_ids: List[str] = self.redis.georadius(self.key_schema.site_geo_key(), \
-        	query.coordinate.lng, query.coordinate.lat, query.radius, query.radius_unit.value)
+        site_ids: List[str] = []
+        capacity_scores_list = []
+
+        p.georadius(self.key_schema.site_geo_key(), \
+        	query.coordinate.lng, query.coordinate.lat, \
+        	query.radius, query.radius_unit.value)
        
-        capacity_scores_list = self.redis.zrange(self.key_schema.capacity_ranking_key(), \
+        p.zrange(self.key_schema.capacity_ranking_key(), \
         	0 , -1, withscores=True)
         
+        result = p.execute()
+
+        site_ids = result[0]
+        capacity_scores_list = result[1]
+
         scores: Dict[str, float] = {
         	site_id: capacity
         	for site_id, capacity in capacity_scores_list
