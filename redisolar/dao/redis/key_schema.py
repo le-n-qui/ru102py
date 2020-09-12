@@ -117,8 +117,8 @@ class KeySchema:
     	limiter:sliding_window
     	Redis type: sorted set
     	"""
-        return f"limiter:sliding_window"
-        
+    	return f"limiter:sliding_window"
+
     @prefixed_key
     def timeseries_key(self, site_id: int, unit: MetricUnit) -> str:
         return f"sites:ts:{site_id}:{unit.value}"
