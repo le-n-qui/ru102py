@@ -112,6 +112,14 @@ class KeySchema:
         return f"limiter:{name}:{window_size_ms}:{max_hits}"
 
     @prefixed_key
+    def sliding_window_key(self):
+    	"""
+    	limiter:sliding_window
+    	Redis type: sorted set
+    	"""
+        return f"limiter:sliding_window"
+        
+    @prefixed_key
     def timeseries_key(self, site_id: int, unit: MetricUnit) -> str:
         return f"sites:ts:{site_id}:{unit.value}"
 
